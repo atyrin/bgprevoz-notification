@@ -2,5 +2,5 @@ package notifications
 
 interface NotificationProvider {
 
-    fun sendMessage()
+    fun sendMessage(message: String)
 }

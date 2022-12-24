@@ -16,17 +16,8 @@ private val linkToFullDescriptionRegex = "<a href=\"(.*?)\".*>.*?</a>"
     .toRegex(RegexOption.DOT_MATCHES_ALL)
 
 
-fun parseActualChanges(): List<TableRow> {
-    val actualChanges = requestChanges()
-    return parseBgPrevozActualChangesPage(actualChanges)
-}
-
-
-/**
- * Select all data from table with changes
- */
-fun parseBgPrevozActualChangesPage(pageContent: String): List<TableRow> {
-    return parseTable(pageContent)
+fun parseActualChanges(actualChanges: String): List<TableRow> {
+    return parseTable(actualChanges)
 }
 
 private fun parseTable(input: String) =
@@ -34,7 +25,7 @@ private fun parseTable(input: String) =
         .mapNotNull { it.toTableRow() }
         .toList()
 
-fun String.toTableRow(): TableRow? {
+private fun String.toTableRow(): TableRow? {
     val routeNumberCell = tableCellRouteNumber.find(this)?.value ?: return null
     val otherCells = tableCellExtrasRegex.findAll(this).map { it.groupValues[1] }.toList()
     val linkToFullDescription = linkToFullDescriptionRegex.find(otherCells[3])?.groupValues?.get(1)
@@ -48,9 +39,10 @@ fun String.toTableRow(): TableRow? {
     )
 }
 
+internal fun String.toRouteNumberCell() = routeNumberInCell.findAll(this).map { it.groupValues[1] }.toList()
+
 data class TableRow(
     val routeNumberCell: List<String>,
     val changeType: String, val description: String, val dates: String, val linkToFullDescription: String?,
 )
 
-fun String.toRouteNumberCell() = routeNumberInCell.findAll(this).map { it.groupValues[1] }.toList()

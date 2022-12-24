@@ -1,7 +1,7 @@
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
 plugins {
-    kotlin("jvm") version "1.8.0-RC"
+    kotlin("jvm") version "1.8.0-RC2"
     application
 }
 
@@ -18,6 +18,10 @@ dependencies {
 
 tasks.test {
     useJUnitPlatform()
+}
+
+kotlin{
+    jvmToolchain(17)
 }
 
 tasks.withType<KotlinCompile> {
