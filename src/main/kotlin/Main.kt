@@ -4,8 +4,8 @@ import notifications.TelegramProvider
 import notifications.toMessages
 
 
-fun main(args: Array<String>) {
-    val (channelName, tgBotApiToken) = args.parse()
+fun main() {
+    val (channelName, tgBotApiToken) = loadSecrets()
 
     val actualChangesHtml = BgPrevozClient().actualChanges()
     val changes = parseActualChanges(actualChangesHtml)
@@ -18,8 +18,8 @@ fun main(args: Array<String>) {
     }
 }
 
-private fun Array<String>.parse(): Pair<String, String> {
-    val channelName = getOrNull(0) ?: throw Exception("Empty channelName")
-    val tgBotApiToken = getOrNull(1) ?: throw Exception("Empty tgBotApiToken")
+private fun loadSecrets(): Pair<String, String> {
+    val channelName = System.getenv("CHANNEL_ID") ?: throw Exception("Empty CHANNEL_ID")
+    val tgBotApiToken = System.getenv("BOT_TOKEN") ?: throw Exception("Empty BOT_TOKEN")
     return Pair(channelName, tgBotApiToken)
 }
