@@ -5,8 +5,7 @@ import notifications.toMessages
 
 
 fun main(args: Array<String>) {
-    val channelName = args.getOrNull(0) ?: throw Exception()
-    val tgBotApiToken = args.getOrNull(1) ?: throw Exception()
+    val (channelName, tgBotApiToken) = args.parse()
 
     val actualChangesHtml = BgPrevozClient().actualChanges()
     val changes = parseActualChanges(actualChangesHtml)
@@ -14,9 +13,13 @@ fun main(args: Array<String>) {
     val prettyPrintedChanges = changes.toMessages()
 
     val provider = TelegramProvider(tgBotApiToken, channelName)
-    prettyPrintedChanges.forEachIndexed { ind, it ->
+    prettyPrintedChanges.forEach {
         provider.sendMessage(it)
-        println("Message $ind: $it")
     }
 }
 
+private fun Array<String>.parse(): Pair<String, String> {
+    val channelName = getOrNull(0) ?: throw Exception("Empty channelName")
+    val tgBotApiToken = getOrNull(1) ?: throw Exception("Empty tgBotApiToken")
+    return Pair(channelName, tgBotApiToken)
+}
