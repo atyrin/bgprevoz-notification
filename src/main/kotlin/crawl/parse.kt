@@ -1,5 +1,7 @@
 package crawl
 
+import model.TimeTableChange
+
 private val tableRow = "<tr class=\"aktuelne_izmene\">(.*?)</tr>"
     .toRegex(RegexOption.DOT_MATCHES_ALL)
 
@@ -16,22 +18,22 @@ private val linkToFullDescriptionRegex = "<a href=\"(.*?)\".*>.*?</a>"
     .toRegex(RegexOption.DOT_MATCHES_ALL)
 
 
-fun parseActualChanges(actualChanges: String): List<TableRow> {
+fun parseActualChanges(actualChanges: String): Set<TimeTableChange> {
     return parseTable(actualChanges)
 }
 
 private fun parseTable(input: String) =
     tableRow.findAll(input).map { it.groupValues[1] }
-        .mapNotNull { it.toTableRow() }
-        .toList()
+        .mapNotNull { it.toTimeTableChange() }
+        .toSet()
 
-private fun String.toTableRow(): TableRow? {
-    val routeNumberCell = tableCellRouteNumber.find(this)?.value ?: return null
+private fun String.toTimeTableChange(): TimeTableChange? {
+    val routeNumberCell = tableCellRouteNumber.find(this)?.value?.toRouteNumberCell() ?: return null
     val otherCells = tableCellExtrasRegex.findAll(this).map { it.groupValues[1] }.toList()
     val linkToFullDescription = linkToFullDescriptionRegex.find(otherCells[3])?.groupValues?.get(1)
 
-    return TableRow(
-        routeNumberCell = routeNumberCell.toRouteNumberCell(),
+    return TimeTableChange(
+        routeNumberCell = routeNumberCell,
         description = otherCells[0].trim(),
         changeType = otherCells[1].trim(),
         dates = otherCells[2].trim(),
@@ -39,10 +41,7 @@ private fun String.toTableRow(): TableRow? {
     )
 }
 
-internal fun String.toRouteNumberCell() = routeNumberInCell.findAll(this).map { it.groupValues[1] }.toList()
+private fun String.toRouteNumberCell() = routeNumberInCell.findAll(this).map { it.groupValues[1] }.toSet()
 
-data class TableRow(
-    val routeNumberCell: List<String>,
-    val changeType: String, val description: String, val dates: String, val linkToFullDescription: String?,
-)
+
 

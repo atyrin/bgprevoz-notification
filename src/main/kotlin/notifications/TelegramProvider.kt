@@ -1,6 +1,6 @@
 package notifications
 
-import crawl.TableRow
+import model.TimeTableChange
 import java.net.URI
 import java.net.URLEncoder
 import java.net.http.HttpClient
@@ -35,30 +35,30 @@ class TelegramProvider(
 /**
  * Telegram message has limit in 4096 symbols. The function split output in few messages if necessary
  */
-internal fun List<TableRow>.toMessages(): List<String> {
-    val result = mutableListOf<String>()
+internal fun Set<TimeTableChange>.toMessages(newChanges: Set<TimeTableChange> = emptySet()): List<String> {
+    val messages = mutableListOf<String>()
     var index = 0
 
     forEach {
-        val c = result.getOrNull(index)
-        val appendableText = it.toMessage()
-        if (c == null) {
-            result.add(index, appendableText)
-        } else {
+        val c = messages.getOrNull(index)
+        val appendableText = it.toMessage(newChanges)
+        if (c == null) messages.add(index, appendableText)
+        else {
             if (appendableText.length + c.length >= MESSAGE_SYMBOLS_LIMIT) {
                 index++
-                result.add(index, appendableText)
-            } else result[index] += "\n\n$appendableText"
+                messages.add(index, appendableText)
+            } else messages[index] += "\n\n$appendableText"
         }
     }
 
-    return result.map { URLEncoder.encode(it, Charset.defaultCharset()) }
+    return messages.map { URLEncoder.encode(it, Charset.defaultCharset()) }
 }
 
-private fun TableRow.toMessage(): String {
+private fun TimeTableChange.toMessage(newChanges: Set<TimeTableChange>): String {
+    val isNewBadge = if (newChanges.contains(this)) " <u>(new)</u>" else ""
     return """
-        |Route${routeNumberCell.size.toPluralEnding()}: ${routeNumberCell.joinToString(" ")}  
-        |Text: $description  
+        |Route${routeNumberCell.size.toPluralEnding()}$isNewBadge: ${routeNumberCell.joinToString(" ")}  
+        |Description: $description <a href="$linkToFullDescription">(more)</a>  
         |Dates: $dates  
     """.trimMargin()
 }
