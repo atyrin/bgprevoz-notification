@@ -57,7 +57,7 @@ internal fun Set<TimeTableChange>.toMessages(newChanges: Set<TimeTableChange> = 
 private fun TimeTableChange.toMessage(newChanges: Set<TimeTableChange>): String {
     val isNewBadge = if (newChanges.contains(this)) " <u>(new)</u>" else ""
     return """
-        |Route${routeNumberCell.size.toPluralEnding()}$isNewBadge: ${routeNumberCell.joinToString(" ")}  
+        |<b>Route${routeNumberCell.size.toPluralEnding()}$isNewBadge: ${routeNumberCell.joinToString(" ")}</b>  
         |Description: $description <a href="$linkToFullDescription">(more)</a>  
         |Dates: $dates  
     """.trimMargin()
