@@ -12,35 +12,44 @@ import notifications.toMessages
 
 fun main() {
     val actualChangesHtml = BgPrevozClient().actualChanges()
-    val changes = parseActualChanges(actualChangesHtml)
 
-    val newChanges = detectNewChanges(changes)
+    val messages = generateMessages(actualChangesHtml)
+    if (messages.isEmpty()) return
 
     val provider = TelegramProvider(Secrets.tgBotToken, Secrets.tgChannelId)
-    changes.toMessages(newChanges).forEach {
+    messages.forEach {
         provider.sendMessage(it)
     }
 }
 
-private fun detectNewChanges(changes: Set<TimeTableChange>): Set<TimeTableChange> {
+private fun generateMessages(actualChangesHtml: String): List<String> {
+    val actualChanges = parseActualChanges(actualChangesHtml)
+
     initDb(
         url = Secrets.pgUrl,
         username = Secrets.pgUsername,
         password = Secrets.pgPassword
     )
 
-    val currentStoredData = dbGetAllChanges()
-    val newChanges =
-        if (currentStoredData.isEmpty()) emptySet() else changeTracking(currentStoredData, changes)
+    val storedChanges = dbGetAllChanges()
+    if (actualChanges == storedChanges) return emptyList()
 
+    val newChanges = detectNewChanges(storedChanges, actualChanges)
+    updateStoredChanges(actualChanges)
+
+    return actualChanges.toMessages(changesToMarkAsNew = newChanges)
+}
+
+private fun detectNewChanges(stored: Set<TimeTableChange>, actual: Set<TimeTableChange>) =
+    if (stored.isEmpty()) emptySet() else changeTracking(previous = stored, new = actual)
+
+private fun updateStoredChanges(actualChanges: Set<TimeTableChange>) {
     dbDeleteAllChanges()
-    dbPutChanges(changes)
-    return newChanges
+    dbPutChanges(actualChanges)
 }
 
 
 private object Secrets {
-
     val tgBotToken by lazy {
         load("TG_BOT_TOKEN")
     }

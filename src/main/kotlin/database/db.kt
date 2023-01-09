@@ -26,14 +26,13 @@ fun dbPutChanges(changes: Collection<TimeTableChange>) {
     transaction {
         changes.forEach { change ->
             TimeTableChanges.insert {
-                it[routes] = change.routeNumberCell.joinToString(",")
+                it[routes] = change.routeNumberCell.packRoutes()
                 it[changeType] = change.changeType
                 it[description] = change.description
                 it[dates] = change.dates
                 it[fullDescriptionLink] = change.linkToFullDescription
             }
         }
-
     }
 }
 
@@ -42,12 +41,15 @@ fun dbGetAllChanges(): Set<TimeTableChange> = transaction {
 }
 
 private fun ResultRow.toTimeTableChange() = TimeTableChange(
-    routeNumberCell = this[TimeTableChanges.routes].split(",").toSet(),
+    routeNumberCell = this[TimeTableChanges.routes].unpackRoutes(),
     changeType = this[TimeTableChanges.changeType],
     description = this[TimeTableChanges.description],
     dates = this[TimeTableChanges.dates],
     linkToFullDescription = this[TimeTableChanges.fullDescriptionLink]
 )
+
+private fun Set<String>.packRoutes() = joinToString(",")
+private fun String.unpackRoutes() = split(",").toSet()
 
 fun dbDeleteAllChanges() = transaction {
     TimeTableChanges.deleteAll()

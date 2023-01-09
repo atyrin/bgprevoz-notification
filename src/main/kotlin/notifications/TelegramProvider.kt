@@ -35,27 +35,27 @@ class TelegramProvider(
 /**
  * Telegram message has limit in 4096 symbols. The function split output in few messages if necessary
  */
-internal fun Set<TimeTableChange>.toMessages(newChanges: Set<TimeTableChange> = emptySet()): List<String> {
+internal fun Set<TimeTableChange>.toMessages(changesToMarkAsNew: Set<TimeTableChange> = emptySet()): List<String> {
     val messages = mutableListOf<String>()
-    var index = 0
+    var messageIndex = 0
 
     forEach {
-        val c = messages.getOrNull(index)
-        val appendableText = it.toMessage(newChanges)
-        if (c == null) messages.add(index, appendableText)
+        val c = messages.getOrNull(messageIndex)
+        val appendableText = it.toMessage(changesToMarkAsNew)
+        if (c == null) messages.add(messageIndex, appendableText)
         else {
             if (appendableText.length + c.length >= MESSAGE_SYMBOLS_LIMIT) {
-                index++
-                messages.add(index, appendableText)
-            } else messages[index] += "\n\n$appendableText"
+                messageIndex++
+                messages.add(messageIndex, appendableText)
+            } else messages[messageIndex] += "\n\n$appendableText"
         }
     }
 
     return messages.map { URLEncoder.encode(it, Charset.defaultCharset()) }
 }
 
-private fun TimeTableChange.toMessage(newChanges: Set<TimeTableChange>): String {
-    val isNewBadge = if (newChanges.contains(this)) " <u>(new)</u>" else ""
+private fun TimeTableChange.toMessage(changesToMarkAsNew: Set<TimeTableChange>): String {
+    val isNewBadge = if (changesToMarkAsNew.contains(this)) " <u>(new)</u>" else ""
     return """
         |<b>Route${routeNumberCell.size.toPluralEnding()}$isNewBadge: ${routeNumberCell.joinToString(" ")}</b>  
         |Description: $description <a href="$linkToFullDescription">(more)</a>  

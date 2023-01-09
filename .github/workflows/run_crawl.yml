@@ -2,7 +2,7 @@ name: Run crawl project
 
 on:
   schedule:
-    - cron: '0 6 * * *'
+    - cron: '50 5,14 * * *'
 
 jobs:
   build-gradle-project:
