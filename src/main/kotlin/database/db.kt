@@ -56,9 +56,9 @@ fun dbDeleteAllChanges() = transaction {
 }
 
 object TimeTableChanges : IntIdTable() {
-    val routes: Column<String> = varchar("routes", 250)
+    val routes: Column<String> = text("routes")
     val changeType: Column<String> = varchar("change_type", 250)
     val description: Column<String> = text("description")
     val dates: Column<String> = varchar("dates", 150)
-    val fullDescriptionLink: Column<String?> = varchar("full_description_link", 350).nullable()
+    val fullDescriptionLink: Column<String?> = text("full_description_link").nullable()
 }

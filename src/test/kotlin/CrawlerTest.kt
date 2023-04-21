@@ -24,8 +24,24 @@ class CrawlerTest {
             TestResources.getFile("testData/bgprevoz/output.html") ?: throw Exception("Invalid mock html")
         val changes = parseActualChanges(actualChangesMockData)
 
-        val prettyPrintedChanges = (changes + changes + changes + changes + changes).toMessages()
-        assertTrue(prettyPrintedChanges.size == 3)
+        val prettyPrintedChanges = changes.toMessages()
+        assertEquals(1, prettyPrintedChanges.size)
+    }
+
+    @Test
+    fun testSplitMessageToFitTextLimit() {
+        val actualChangesMockData =
+            TestResources.getFile("testData/bgprevoz/output.html") ?: throw Exception("Invalid mock html")
+        val changes = parseActualChanges(actualChangesMockData)
+
+        // to avoid collapsing by set
+        val changesChunk = changes +
+                changes.addRoute("000") +
+                changes.addRoute("001") +
+                changes.addRoute("002")
+
+        val prettyPrintedChanges = changesChunk.toMessages()
+        assertEquals(3, prettyPrintedChanges.size)
     }
 
 
@@ -79,3 +95,7 @@ class CrawlerTest {
         )
     }
 }
+
+private fun Set<TimeTableChange>.addRoute(route: String) = map {
+    it.copy(routeNumberCell = it.routeNumberCell + route)
+}.toSet()
