@@ -8,6 +8,7 @@ import model.TimeTableChange
 import model.changeTracking
 import notifications.TelegramProvider
 import notifications.toMessages
+import org.jetbrains.exposed.sql.transactions.transaction
 
 
 fun main() {
@@ -44,8 +45,10 @@ private fun detectNewChanges(stored: Set<TimeTableChange>, actual: Set<TimeTable
     if (stored.isEmpty()) emptySet() else changeTracking(previous = stored, new = actual)
 
 private fun updateStoredChanges(actualChanges: Set<TimeTableChange>) {
-    dbDeleteAllChanges()
-    dbPutChanges(actualChanges)
+    transaction {
+        dbDeleteAllChanges()
+        dbPutChanges(actualChanges)
+    }
 }
 
 
